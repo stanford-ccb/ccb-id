@@ -1,0 +1,84 @@
+Bootstrap: docker
+From: ubuntu:17.10 
+
+%help
+    Singularity image based on ubuntu 17.10 with libraries for running CCB-ID
+    Maintained by Christopher Anderson (cbanders@stanford.edu) @christobal54
+
+%labels
+    Maintainer Christopher Anderson
+    Website https://github.com/stanford-ccb/ccb-id
+    Version 0.1.0
+
+%setup
+    # set the default directory for storing configuration files
+    mkdir $SINGULARITY_ROOTFS/ccb
+
+%environment
+    # set the base ccb data directory
+    export CCB=/ccb
+
+    # set the python path for custom ccb-id install
+    export PYTHONPATH=$CCB/ccb-id
+    export PATH=$CCB/ccb-id/bin:$PATH
+
+%post
+    # set the default directory for storing configuration files
+    export CCB=/ccb
+    cd $CCB
+
+    # install packages via apt
+    apt-get update -y
+    apt-get install -y \
+        python-gdal \
+        gdal-bin \
+        libgdal20 \
+        ipython \
+        python-setuptools \
+        python-dev \
+        python-pip \
+        python-tk \
+        build-essential \
+        libfontconfig1 \
+        mesa-common-dev \
+        python-numpy \
+        python-scipy \
+        python-pandas \
+        python-geopandas \
+        python-qt4 \
+        python-sip \
+        python-pyside \
+        gcc \
+        gfortran \
+        qt5.1 \
+        git \
+        vim
+
+    # clean up the apt files
+    apt-get clean 
+    rm -rf /var/lib/apt/lists/*
+
+    # install pip packages
+    pip install matplotlib \
+        qtpy \
+        Pyro4 \
+        psutil \
+        rtree \
+        qtawesome \
+        qtpy \
+        six \
+        taskgraph \
+        Pyro4 
+
+    # install ccb-id from git repo
+    git clone https://github.com/stanford-ccb/ccb-id.git
+    
+    # install the ccb-id dependencies
+    pip install -r ccb-id/requirements.txt
+    
+    # that's all, folks!
+
+%runscript
+    echo "--- CCB-ID ---"
+    echo "Arguments passed: $*"
+    exec "$@"
