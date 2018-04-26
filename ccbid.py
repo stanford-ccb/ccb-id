@@ -11,5 +11,7 @@ from sklearn import model_selection as _model_selection
 from sklearn.decomposition import PCA as _PCA
 from matplotlib import pyplot as _plt
 
+__version__ = '0.1.0'
+
 def dummy():
     pass
