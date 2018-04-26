@@ -1,1 +1,3 @@
 .zedstate
+*.pyc
+ccb-id/*.pyc
