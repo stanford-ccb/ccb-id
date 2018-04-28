@@ -19,8 +19,8 @@ From: ubuntu:17.10
     export CCB=/ccb
 
     # set the python path for custom ccb-id install
-    export PYTHONPATH=$CCB/ccb-id
-    export PATH=$CCB/ccb-id/bin:$PATH
+    #export PYTHONPATH=$CCB/ccb-id
+    #export PATH=$CCB/ccb-id/bin:$PATH
 
 %post
     # set the default directory for storing configuration files
@@ -80,5 +80,4 @@ From: ubuntu:17.10
 
 %runscript
     echo "--- CCB-ID ---"
-    echo "Arguments passed: $*"
     exec "$@"
