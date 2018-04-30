@@ -5,7 +5,7 @@ The Stanford Center for Conservation Biology's imaging-spectroscopy-based specie
 This work is described in Anderson, 2018, [The CCB-ID approach to tree species mapping with airborne imaging spectroscopy](https://ccb.stanford.edu). It was developed as part of the NEON-NIST [ECODSE](http://www.ecodse.org/) data science evaluation competition.
 
 All (c) 2018 Christopher B. Anderson
-- [E-mail](cbanders@stanford.edu)
+- [E-mail](mailto:cbanders@stanford.edu)
 - [Google Scholar](https://scholar.google.com/citations?user=LoGxS40AAAAJ&hl=en)
 - [Twitter](https://twitter.com/hypersketch)
  
@@ -13,7 +13,7 @@ All (c) 2018 Christopher B. Anderson
 
 The CCB-ID package can be used in two ways. First, you can run the scripts for training and applying species classification models (under `bin/train` and `bin/apply` respectively). Second, you could import the underlying python functions used in these scripts under `ccbid.py`.
 
-If you install this package using Singularity (e.g., following the [Singularity install instructions](#Singularity)), you could train and apply the models using the following commands.
+If you install this package using Singularity (e.g., following the [Singularity install instructions](#singularity)), you could train and apply the models using the following commands.
 
 ```sh
 ccb-id train -i /path/to/training_data -o /path/to/ccbid_model
@@ -57,8 +57,12 @@ Singularity containers can be used to package workflows, software, libraries, an
 ```sh
 # clone the repo then build the singularity image
 git clone https://github.com/stanford-ccb/ccb-id.git
-sudo singularity build ccb-id ccb-id/singularity.build
+cd ccb-id
+sudo singularity build ccb-id singularity.build
+```
 
+Building the container will take a while. Once built, you can run:
+```
 # then an example of printing the help options for model training
 ./ccbid train --h
 
@@ -66,11 +70,11 @@ sudo singularity build ccb-id ccb-id/singularity.build
 ./ccbid python -c "import ccbid; print(dir(ccbid))"
 ```
 
-The CCB-ID module is localized inside the `ccb-id` Singularity container, so you can move this container to any directory (e.g., if you store all your containers in one place like `~/singularity/`. Or, you could add the path with the `ccb-id` container to `$PATH`. 
+The CCB-ID module is localized inside the `ccb-id` container, so you can move this container to any directory (e.g., if you store all your containers in one place like `~/singularity/`. Or, you could add the path with the `ccb-id` container to `$PATH`. 
 
 ### Conda
 
-Additionally, users can install a custom conda environment to run the module. You can run:
+Additionally, users can install a custom conda environment to run the module. I say this, but it is not yet true (in development). You can (soon) run:
 
 ```sh
 git clone https://github.com/stanford-ccb/ccb-id.git
@@ -78,17 +82,30 @@ cd ccb-id
 conda env update
 ```
 
+Then you should have a conda environment you can actiave with `conda activate ccbid`. 
+
 ### pip
 
 You could also install the package via pip. This won't install the binary packages that are necessary to run some of the commands (e.g., `gdal`), but will install the ccb-id package into your python environment.
 
 ```sh
 git clone https://github.com/stanford-ccb/ccb-id.git
-pip install ccb-id
+sudo pip install ccb-id
 ```
+
+If you want to make sure you have all the binary requirements, you could follow the same commands from `singularity.build` a la:
+
+```sh
+sudo apt-get install -y python-gdal gdal-bin libgdal20 ipython python-setuptools python-dev python-pip python-tk build-essential libfontconfig1 mesa-common-dev python-numpy python-scipy python-pandas python-geopandas python-qt4 python-sip python-pyside gcc gfortran qt5.1 git vim
+git clone https://github.com/stanford-ccb/ccb-id.git
+sudo pip install -r ccb-id/requirements.txt
+sudo pip install ccbid
+```
+
+But at that point I think you're better of running the Singularity [install](#singularity) since `gdal` tends to wreak havoc on system installs.
 
 ## Additional information
 
 That's all, folks!
 
-You've surely read enough. Go reward yourself by grabbing a warm beverage and perusing [any](http://70sscifiart.tumblr.com/) of [these](https://wearethemutants.com/) cool [sites](http://www.iamag.co/features/the-art-of-moebius/).
+You've surely read enough. Go reward yourself by grabbing a warm beverage and perusing [any](http://70sscifiart.tumblr.com/) of [these](https://wearethemutants.com/) cool and good  [sites](http://www.iamag.co/features/the-art-of-moebius/).
