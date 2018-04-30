@@ -1,3 +1,94 @@
-# ccb-id
+# CCB-ID
+
 The Stanford Center for Conservation Biology's imaging-spectroscopy-based species classification approach.
-More coming soon!
+
+This work is described in Anderson, 2018, [The CCB-ID approach to tree species mapping with airborne imaging spectroscopy](https://ccb.stanford.edu). It was developed as part of the NEON-NIST [ECODSE](http://www.ecodse.org/) data science evaluation competition.
+
+All (c) 2018 Christopher B. Anderson
+- [E-mail](cbanders@stanford.edu)
+- [Google Scholar](https://scholar.google.com/citations?user=LoGxS40AAAAJ&hl=en)
+- [Twitter](https://twitter.com/hypersketch)
+ 
+## Functionality
+
+The CCB-ID package can be used in two ways. First, you can run the scripts for training and applying species classification models (under `bin/train` and `bin/apply` respectively). Second, you could import the underlying python functions used in these scripts under `ccbid.py`.
+
+If you install this package using Singularity (e.g., following the [Singularity install instructions](#Singularity)), you could train and apply the models using the following commands.
+
+```sh
+ccb-id train -i /path/to/training_data -o /path/to/ccbid_model
+ccb-id apply -i /path/to/testing_data -m /path/to/ccbid_model -o /path/to/predictions
+```
+
+You could also import the functions from `ccbid.py` in the singularity shell environment.
+
+```sh
+ccb-id ipython
+import ccbid
+ccbid.read.bands('/ccb/ccb-id/suport_files/neon-bands.csv')
+# etc.
+```
+
+Run `ccb-id train --h` and `ccb-id apply --h` to review command line options.
+
+## ECODSE results
+
+You can reproduce the results submitted to the ECODSE competition by using the `-e` flag in `ccb-id train` and `ccb-id apply`. To do this, run the following commands.
+
+```sh
+ccb-id train -o ecodse-model -e -v
+ccb-id apply -m ecodse-model -o ecodse-results.csv -e -v
+```
+
+Where the output file `ecodse-results.csv` will have the output species prediction probabilities. The `-e` flag ensure the ECODSE data will be used, and the `-v` flag sets the module to verbose mode to report classification metrics.
+
+## Using other data
+
+The CCB-ID scripts allow using custom data as inputs to model building. However, these custom data should share the same formats as the data in `support_files/`. Other modifications can be made to the CCB-ID approach, such as using a custom reducer or custom classification model. This is done by saving these custom objects to a python `pickle` file, then using `ccb-id train` options like `--reducer /path/to/reducer.pck` or `--models /path/to/model1.pck /path/to/model2.pck`. The idea here was to allow you to bring your own data to run new models, but have the defaults set to the NEON/ECODSE data.
+ 
+## Install options
+
+Users have several options for installing CCB-ID. I recommend using [Singularity](http://singularity.lbl.gov/), as the packaged was developed in a singularity container environment.
+
+### Singularity
+
+Singularity containers can be used to package workflows, software, libraries, and data, and can be transferred across machines. The CCB-ID package comes with a Singularity build script to run the module, and contains the full CCB-ID workflow. To use it, you must have [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) and Singularity installed (instructions for [Linux](http://singularity.lbl.gov/install-linux), [Mac](http://singularity.lbl.gov/install-mac), or [Windows](http://singularity.lbl.gov/install-windows)). You can then run:
+
+```sh
+# clone the repo then build the singularity image
+git clone https://github.com/stanford-ccb/ccb-id.git
+sudo singularity build ccb-id ccb-id/singularity.build
+
+# then an example of printing the help options for model training
+./ccbid train --h
+
+# or printing out the available ccb-id functions
+./ccbid python -c "import ccbid; print(dir(ccbid))"
+```
+
+The CCB-ID module is localized inside the `ccb-id` Singularity container, so you can move this container to any directory (e.g., if you store all your containers in one place like `~/singularity/`. Or, you could add the path with the `ccb-id` container to `$PATH`. 
+
+### Conda
+
+Additionally, users can install a custom conda environment to run the module. You can run:
+
+```sh
+git clone https://github.com/stanford-ccb/ccb-id.git
+cd ccb-id
+conda env update
+```
+
+### pip
+
+You could also install the package via pip. This won't install the binary packages that are necessary to run some of the commands (e.g., `gdal`), but will install the ccb-id package into your python environment.
+
+```sh
+git clone https://github.com/stanford-ccb/ccb-id.git
+pip install ccb-id
+```
+
+## Additional information
+
+That's all, folks!
+
+You've surely read enough. Go reward yourself by grabbing a warm beverage and perusing [any](http://70sscifiart.tumblr.com/) of [these](https://wearethemutants.com/) cool [sites](http://www.iamag.co/features/the-art-of-moebius/).
