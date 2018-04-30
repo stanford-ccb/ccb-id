@@ -13,8 +13,8 @@ from sklearn import model_selection
 
 # set some paths for running on defaults
 ps = os.sep
-pbin = os.path.dirname(os.path.realpath(__file__))
-pbase = os.path.dirname(pbin)
+ppkg = ccbid._core._path
+pbase = os.path.dirname(ppkg)
 psup = ps.join([pbase, 'support_files'])
 
 path_training = ps.join([psup, 'training.csv'])
@@ -29,7 +29,13 @@ cpus = multiprocessing.cpu_count()
 
 # set up the argument parser to read command line inputs
 def parse_args():
-    """
+    """Function to read CCB-ID command line arguments
+    
+    Args:
+        None - reads from sys.argv
+        
+    Returns:
+        an argparse object
     """
     
     # create the argument parser
@@ -39,7 +45,7 @@ def parse_args():
     parser.add_argument('-i', '--input', help='path to an input CSV file for model training',
                         default=path_training, type=str)
                         
-    parser.add_argument('-c', '--crowns', help='path to the CSV file with crow ID data',
+    parser.add_argument('-c', '--crowns', help='path to the CSV file with crown ID data',
                         default=path_crowns, type=str)
     
     parser.add_argument('-o', '--output', help='path to the output model', required=True, 
