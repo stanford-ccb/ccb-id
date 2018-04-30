@@ -1,9 +1,10 @@
 from setuptools import setup, find_packages
-import ccbid
+#from ccbid._version import __version__ as ver
+exec(open('ccbid/_version.py').read())
 
 setup_args = {
     'name': 'ccb-id',
-    'version': ccbid.__version__,
+    'version': __version__,
     'url': 'https://github.com/stanford-ccb/ccb-id',
     'license': 'MIT',
     'author': 'Christopher Anderson',
@@ -21,19 +22,19 @@ setup_args = {
     'include_package_data': True,
     'platforms': 'any',
     'scripts': [
-        'bin/train.py'
+        'bin/train'
     ],
     'data_files': [
         ('support_files', [
-            'support_files/gbc.pck',
-            'support_files/rfc.pck',
-            'support_files/params-gbc.pck',
-            'support_files/params-rfc.pck',
-            'support_files/reducer.pck',
-            'support_files/training.csv',
-            'support_files/testing.csv',
-            'support_files/neon-bands.csv',
-            'support_files/species_id.csv'
+            'ccbid/support_files/gbc.pck',
+            'ccbid/support_files/rfc.pck',
+            'ccbid/support_files/params-gbc.pck',
+            'ccbid/support_files/params-rfc.pck',
+            'ccbid/support_files/reducer.pck',
+            'ccbid/support_files/training.csv',
+            'ccbid/support_files/testing.csv',
+            'ccbid/support_files/neon-bands.csv',
+            'ccbid/support_files/species_id.csv'
         ])
     ]
 }
