@@ -33,11 +33,18 @@ Run `ccb-id train --h` and `ccb-id apply --h` to review command line options.
 
 ## ECODSE results
 
-You can reproduce the results submitted to the ECODSE competition by using the `-e` flag in `ccb-id train` and `ccb-id apply`. To do this, run the following commands.
+You can reproduce the results submitted to the ECODSE competition by using the `-e` flag in `ccb-id train` and `ccb-id apply`. To do this, run the following commands for a Singularity install.
 
 ```sh
 ccb-id train -o ecodse-model -e -v
 ccb-id apply -m ecodse-model -o ecodse-results.csv -e -v
+```
+
+Or from the ccbid [conda](#conda) environment.
+
+```sh
+train -o ecodse-model -e -v
+apply -m ecodse-model -o ecodse-results.csv -e -v
 ```
 
 Where the output file `ecodse-results.csv` will have the output species prediction probabilities. The `-e` flag ensure the ECODSE data will be used, and the `-v` flag sets the module to verbose mode to report classification metrics.
@@ -62,13 +69,12 @@ sudo singularity build ccb-id singularity.build
 ```
 
 Building the container will take a while. Once built, you can run:
-```
-# then an example of printing the help options for model training
+```sh
 ./ccbid train --h
-
-# or printing out the available ccb-id functions
 ./ccbid python -c "import ccbid; print(dir(ccbid))"
 ```
+
+These will verify the package installed correctly, and list out the command line options and the package functions.
 
 The CCB-ID module is localized inside the `ccb-id` container, so you can move this container to any directory (e.g., if you store all your containers in one place like `~/singularity/`. Or, you could add the path with the `ccb-id` container to `$PATH`. 
 
@@ -80,9 +86,12 @@ Additionally, users can install a custom conda environment to run the module. I 
 git clone https://github.com/stanford-ccb/ccb-id.git
 cd ccb-id
 conda env update
+source activate ccbid
+pip install -r requirements.txt
+pip install .
 ```
 
-Then you should have a conda environment you can actiave with `conda activate ccbid`. 
+Then you should have a conda environment you can actiave with `conda activate ccbid`.
 
 ### pip
 
