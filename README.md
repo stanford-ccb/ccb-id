@@ -11,7 +11,7 @@ All (c) 2018 Christopher B. Anderson
  
 ## Functionality
 
-The CCB-ID package can be used in two ways. First, you can run the scripts for training and applying species classification models (under `bin/train` and `bin/apply` respectively). Second, you could import the underlying python functions used in these scripts under `ccbid.py`.
+The CCB-ID package can be used in two ways. First, you can run the scripts for training and applying species classification models (under `bin/train` and `bin/apply` respectively). Second, you could import the underlying python functions used in these scripts using `import ccbid` (based on the functions in `ccbid/_core.py`.
 
 If you install this package using Singularity (e.g., following the [Singularity install instructions](#singularity)), you could train and apply the models using the following commands.
 
@@ -29,7 +29,7 @@ ccbid.read.bands('/ccb/ccb-id/suport_files/neon-bands.csv')
 # etc.
 ```
 
-Run `ccb-id train --h` and `ccb-id apply --h` to review command line options.
+Run `ccb-id train -h` and `ccb-id apply -h` to review command line options.
 
 ## ECODSE results
 
@@ -51,15 +51,15 @@ Where the output file `ecodse-results.csv` will have the output species predicti
 
 ## Using other data
 
-The CCB-ID scripts allow using custom data as inputs to model building. However, these custom data should share the same formats as the data in `support_files/`. Other modifications can be made to the CCB-ID approach, such as using a custom reducer or custom classification model. This is done by saving these custom objects to a python `pickle` file, then using `ccb-id train` options like `--reducer /path/to/reducer.pck` or `--models /path/to/model1.pck /path/to/model2.pck`. The idea here was to allow you to bring your own data to run new models, but have the defaults set to the NEON/ECODSE data.
+The CCB-ID scripts allow using custom data as inputs to model building. These custom data should share the same formats as the data in `support_files/`. Other modifications can be made to the CCB-ID approach, such as using a custom data reducer or custom classification models. This is done by saving these custom objects to a python `pickle` file, then using `ccb-id train` options like `--reducer /path/to/reducer.pck` or `--models /path/to/model1.pck /path/to/model2.pck`. The idea here was to allow you to bring your own data to run new models. Currently, the defaults set to use the NEON/ECODSE data.
  
 ## Install options
 
-Users have several options for installing CCB-ID. I recommend using [Singularity](http://singularity.lbl.gov/), as the packaged was developed in a singularity container environment.
+Users have several options for installing CCB-ID. I recommend using [Singularity](#singularity), as the packaged was developed in a singularity container environment. [Conda](#conda) and [pip](#pip) installs are supported, too.
 
 ### Singularity
 
-Singularity containers can be used to package workflows, software, libraries, and data, and can be transferred across machines. The CCB-ID package comes with a Singularity build script to run the module, and contains the full CCB-ID workflow. To use it, you must have [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) and Singularity installed (instructions for [Linux](http://singularity.lbl.gov/install-linux), [Mac](http://singularity.lbl.gov/install-mac), or [Windows](http://singularity.lbl.gov/install-windows)). You can then run:
+[Singularity](http://singularity.lbl.gov/) containers can be used to package workflows, software, libraries, and data, and can be transferred across machines. The CCB-ID package comes with a Singularity build script to run the module, and contains the full CCB-ID workflow. To use it, you must have [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) and Singularity installed (instructions for [Linux](http://singularity.lbl.gov/install-linux), [Mac](http://singularity.lbl.gov/install-mac), or [Windows](http://singularity.lbl.gov/install-windows)). You can then run:
 
 ```sh
 # clone the repo then build the singularity image
@@ -80,7 +80,7 @@ The CCB-ID module is localized inside the `ccb-id` container, so you can move th
 
 ### Conda
 
-Additionally, users can install a custom conda environment to run the module. I say this, but it is not yet true (in development). You can (soon) run:
+Additionally, users can install a custom conda environment to run the CCB-ID module. You can run:
 
 ```sh
 git clone https://github.com/stanford-ccb/ccb-id.git
@@ -88,10 +88,10 @@ cd ccb-id
 conda env update
 source activate ccbid
 pip install -r requirements.txt
-pip install .
+python setup.py install
 ```
 
-Then you should have a conda environment you can actiave with `conda activate ccbid`.
+Then you should have a conda environment you can actiave with `conda activate ccbid`. You can then run the executable `train -h`, or `import ccb` in python from this environment. 
 
 ### pip
 
@@ -99,7 +99,9 @@ You could also install the package via pip. This won't install the binary packag
 
 ```sh
 git clone https://github.com/stanford-ccb/ccb-id.git
-sudo pip install ccb-id
+cd ccb-id
+pip install -r requirements.txt
+python setup.py install
 ```
 
 If you want to make sure you have all the binary requirements, you could follow the same commands from `singularity.build` a la:
@@ -108,7 +110,7 @@ If you want to make sure you have all the binary requirements, you could follow 
 sudo apt-get install -y python-gdal gdal-bin libgdal20 ipython python-setuptools python-dev python-pip python-tk build-essential libfontconfig1 mesa-common-dev python-numpy python-scipy python-pandas python-geopandas python-qt4 python-sip python-pyside gcc gfortran qt5.1 git vim
 git clone https://github.com/stanford-ccb/ccb-id.git
 sudo pip install -r ccb-id/requirements.txt
-sudo pip install ccbid
+sudo python setup.py install
 ```
 
 But at that point I think you're better of running the Singularity [install](#singularity) since `gdal` tends to wreak havoc on system installs.
