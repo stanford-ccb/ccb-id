@@ -70,7 +70,7 @@ sudo singularity build ccb-id singularity.build
 
 Building the container will take a while. Once built, you can run:
 ```sh
-./ccbid train --h
+./ccbid train -h
 ./ccbid python -c "import ccbid; print(dir(ccbid))"
 ```
 
@@ -109,7 +109,8 @@ If you want to make sure you have all the binary requirements, you could follow 
 ```sh
 sudo apt-get install -y python-gdal gdal-bin libgdal20 ipython python-setuptools python-dev python-pip python-tk build-essential libfontconfig1 mesa-common-dev python-numpy python-scipy python-pandas python-geopandas python-qt4 python-sip python-pyside gcc gfortran qt5.1 git vim
 git clone https://github.com/stanford-ccb/ccb-id.git
-sudo pip install -r ccb-id/requirements.txt
+cd ccb-id/
+sudo pip install -r requirements.txt
 sudo python setup.py install
 ```
 
