@@ -48,6 +48,7 @@ From: ubuntu:17.10
         python-qt4 \
         python-sip \
         python-pyside \
+        python-h5py \
         gcc \
         gfortran \
         qt5.1 \
