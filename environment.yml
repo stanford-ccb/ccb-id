@@ -1,0 +1,13 @@
+name: ccbid
+
+dependencies:
+- python=2.7.14
+- gdal
+- pip
+- cython
+- scipy
+- numpy
+- matplotlib
+- pandas
+- h5py
+- ipython
