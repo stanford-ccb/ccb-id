@@ -7,7 +7,7 @@ This work is described in Anderson, 2018, [The CCB-ID approach to tree species m
 All (c) 2018 Christopher B. Anderson
 - [E-mail](mailto:cbanders@stanford.edu)
 - [Google Scholar](https://scholar.google.com/citations?user=LoGxS40AAAAJ&hl=en)
-- [Twitter](https://twitter.com/hypersketch)
+- [Personal website](https://cbanderson.info)
  
 ## Functionality
 
@@ -20,7 +20,7 @@ ccb-id train -i /path/to/training_data -o /path/to/ccbid_model
 ccb-id apply -i /path/to/testing_data -m /path/to/ccbid_model -o /path/to/predictions
 ```
 
-You could also import the functions from `ccbid.py` in the singularity shell environment.
+You could also import the functions from `ccbid.py` in the singularity shell environment. 
 
 ```sh
 ccb-id ipython
@@ -29,7 +29,7 @@ ccbid.read.bands('/ccb/ccb-id/suport_files/neon-bands.csv')
 # etc.
 ```
 
-Run `ccb-id train -h` and `ccb-id apply -h` to review command line options.
+Run `ccb-id train -h` and `ccb-id apply -h` to review command line options. Please note the `apply` function is still in development - will have a v1 soon!
 
 ## ECODSE results
 

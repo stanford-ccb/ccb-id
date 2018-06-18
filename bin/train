@@ -8,24 +8,11 @@ import ccbid
 import argparse
 import numpy as np
 import multiprocessing
+from ccbid import args
+from ccbid import prnt
 from sklearn import metrics
 from sklearn import model_selection
 
-# set some paths for running on defaults
-ps = os.sep
-ppkg = ccbid._core._path
-pbase = os.path.dirname(ppkg)
-psup = ps.join([pbase, 'support_files'])
-
-path_training = ps.join([psup, 'training.csv'])
-path_reducer = ps.join([psup, 'reducer.pck'])
-path_crowns = ps.join([psup, 'species_id.csv'])
-path_bands = ps.join([psup, 'neon-bands.csv'])
-path_rfc = ps.join([psup, 'rfc.pck'])
-path_gbc = ps.join([psup, 'gbc.pck'])
-
-# get the number of cpus to use as defaults
-cpus = multiprocessing.cpu_count()
 
 # set up the argument parser to read command line inputs
 def parse_args():
@@ -39,54 +26,28 @@ def parse_args():
     """
     
     # create the argument parser
-    parser = argparse.ArgumentParser(description='Train and save a CCB-ID species classification model.')
+    parser = args.create_parser(description='Train and save a CCB-ID species classification model.')
+    #parser = argparse.ArgumentParser(description='Train and save a CCB-ID species classification model.')
     
     # set up the arguments for dealing with file i/o
-    parser.add_argument('-i', '--input', help='path to an input CSV file for model training',
-                        default=path_training, type=str)
-                        
-    parser.add_argument('-c', '--crowns', help='path to the CSV file with crown ID data',
-                        default=path_crowns, type=str)
-    
-    parser.add_argument('-o', '--output', help='path to the output model', required=True, 
-                        type=str)
-    
-    parser.add_argument('-e', '--ecodse', help='flag to run with options used in the ECODSE submission',
-                        action='store_true')
-    
-    parser.add_argument('--reducer', help='path to the data reducer (e.g., the PCA transformer)',
-                        default=path_reducer, type=str)
-                        
-    parser.add_argument('-n', '--n-features', help='the number of features to select after transformation',
-                        default=100, type=int)
-                        
-    parser.add_argument('-m', '--models', help='paths to classification models to use',
-                        nargs='+', default=[path_gbc, path_rfc], type=str)
-    
-    parser.add_argument('-b', '--bands', help='path to a file specifying the bands to use',
-                        default=path_bands, type=str)
-     
-    # arguments to turn on certian flags or set specific parameters
-    parser.add_argument('-r', '--remove-outliers', help='flag to remove outliers using PCA',
-                        choices=['PCA'], default=None)
-                        
-    parser.add_argument('-s', '--split', help='method for splitting the train/test data',
-                        choices=['crown', 'sample'], default='sample')
-    
-    parser.add_argument('-t', '--tune', help='flag to perform model tuning instead of using pre-tuned hyperparameters',
-                        action='store_true')
-                        
-    parser.add_argument('-g', '--grids', help='path to the param grid(s) for each model to tune', nargs='+')
-                        
-    #parser.add_argument('-f', '--feature-selection', help='flag to enable feature selection',
-    #                    action='store_true')
-                        
-    parser.add_argument('--cpus', help='the number of cores to use in model training/fitting',
-                        default=cpus-1, type=int)
+    args.input(parser)
+    args.crowns(parser)
+    args.output(parser)
+    args.ecodse(parser)
+    args.reducer(parser)
+    args.n_features(parser)                    
+    args.models(parser)
+    args.bands(parser)
 
-    parser.add_argument('-v', '--verbose', help='turn on verbose mode. Not that I have that much to say..', 
-                        action='store_true')
-    
+    # arguments to turn on certian flags or set specific parameters
+    args.remove_outliers(parser)
+    args.split(parser)
+    args.tune(parser)
+    args.grids(parser)
+    #args.feature_selection(parser)
+    args.cpus(parser)
+    args.verbose(parser)
+
     # set up the arguments for dealing with 
     return parser.parse_args(sys.argv[1:])
 
@@ -116,29 +77,6 @@ def arg_logic(args):
         args.feature_selection = False
 
 
-# functions for formatted printing
-class prnt:
-    def __init__(self):
-        pass
-    
-    @staticmethod
-    def status(msg):
-        print("[ STATUS ] {}".format(msg))
-        
-    @staticmethod
-    def error(msg):
-        print("[ ERROR! ] {}".format(msg))
-        
-    @staticmethod
-    def line_break():
-        print("[ ------ ]")
-        
-    @staticmethod
-    def model_report(ytrue, ypred, yprob):
-        prnt.status("Mean accuracy score: {}".format(metrics.accuracy_score(ytrue, ypred)))
-        prnt.status("Mean log loss score: {}".format(metrics.log_loss(ytrue, yprob)))
-        
-        
 # set up the main script function
 def main():
     """The main function for train.py
@@ -183,7 +121,7 @@ def main():
             
         # currently only one version of outlier removal
         if args.remove_outliers == 'PCA':
-            mask = ccbid.identify_outliers.with_pca(features[:, good_bands])
+            mask = ccbid.outliers.with_pca(features[:, good_bands])
             
         # subset all data using the mask for future analyses
         features = features[mask, :]
@@ -291,7 +229,7 @@ def main():
     m.average_proba_ = True
     
     # save the ccb model variable
-    ccbid.write_pck(args.output, m)
+    ccbid.write.pck(args.output, m)
     
     prnt.line_break()
     prnt.status("CCB-ID model training complete!")
