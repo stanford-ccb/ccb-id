@@ -74,7 +74,19 @@ def bands(parser):
     parser.add_argument('-b', '--bands', help='path to a file specifying the bands to use',
                         default=path_bands, type=str)
     return parser
+
+def aggregate(parser):
+    parser.add_argument('-a', '--aggregate', help='method for aggregating predictions (e.g., to crown scale)',
+                        default=None, choices=['average'])
+    return parser
     
+def labels(parser):
+    parser.add_argument('-l', '--labels', help='classified raster with unique crown labels',
+                        default=None)
+                        
+def mask(parser):
+    parser.add_argument('--mask', help='a binary raster mask for where to apply the model. only applies to raster data',
+                        default=None)
 
 # arguments to turn on certian flags or set specific parameters
 def remove_outliers(parser):

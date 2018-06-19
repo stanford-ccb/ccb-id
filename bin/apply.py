@@ -41,8 +41,7 @@ def parse_args():
     """
     
     # create the argument parser
-    parser = args.create_parser(description='Train and save a CCB-ID species classification model.')
-    #parser = argparse.ArgumentParser(description='Train and save a CCB-ID species classification model.')
+    parser = args.create_parser(description='Apply a CCB-ID species classification model to csv or image data.')
     
     # set up the arguments for dealing with file i/o
     args.input(parser)
@@ -53,9 +52,8 @@ def parse_args():
 
     # arguments to turn on certian flags or set specific parameters
     args.remove_outliers(parser)
-    args.aggregate(parser) # write this, option to aggregate the data to other scales (e.g., crown scale)
-    args.labels(parser) # write this, option to read image with crown labels
-    #args.feature_selection(parser)
+    args.aggregate(parser)
+    args.labels(parser)
     args.cpus(parser) # maybe add function to model object to update the n_cpus in each model
     args.verbose(parser)
 
@@ -78,6 +76,7 @@ def arg_logic(args):
     if args.ecodse:
         args.input = args.path_training
         args.remove_outliers = False
+        args.aggregate = 'average'
         #args.feature_selection = False
 
 
@@ -112,17 +111,32 @@ def main():
     # first read the model data
     model = ccbid.read.pck(args.ccbid_model)
     
+    # get base data from the model
+    sp_labels = model.labels_
+    
     # set up a dummy variable to determine if data should be output on a per-crown or per-=pixel basis
     
     # then read the feature data, which may come as a raster or a csv
     if ccbid.read.is_raster(args.input):
-        features = ccbid.read.raster(args.input)
+        raster = ccbid.read.raster(args.input)
+        raster.read_all()
+        
+        # if a mask is set, just apply the model to those data
+        if args.mask is not None:
+            mask = ccbid.read.raster(args.mask)
+            mask_ind = mask.read_band(1).data == 1
+            features = raster.data[mask_ind]
+            mask.data = None
+            
+        # otherwise, flatten the data from [x, y, features] to [rows, features]
+        features = raster.data.reshape((raster.nx * raster.ny, raster.nb))
+        
+        # and clear memory
+        raster.data = None
         # work on this later
         
     if ccbid.read.is_csv(args.input):
-        testing_id, features = ccbid.read.training_data(args.input)
-        crowns_unique = np.unique(testing_id)
-        n_crowns = len(crowns_unique)
+        id_labels, features = ccbid.read.training_data(args.input)
         
     #-----
     # step 2. outlier removal
@@ -138,7 +152,7 @@ def main():
             
         # subset all data using the mask for future analyses
         features = features[mask, :]
-        testing_id = training_id[mask]
+        id_labels = id_labels[mask]
         
         # report on the number of samples removed
         if args.verbose:
@@ -167,25 +181,18 @@ def main():
     prob = model.predict_proba(features, average_proba=True)
         
     # ensemble the pixels to the crown scale
-    if args.aggregate:
+    if args.aggregate is not None:
         # do it differently for csv vs raster
         if ccbid.read.is_csv(args.input):
-            # create the output array to store the results
-            n_species = prob.shape[1]
-            output_pr = np.zeros(n_crowns * n_species)
-            
-            # loop through each crown, calculate the average probability per crown, and write it to the array
-            # !!! should probably move this to a ccbid function
-            for i in range(n_crowns):
-                crown_index = testing_id == crowns_unique[i]
-                output_pr[i * n_species:(i+1) * n_species] = prob[crown_index].mean(axis=0)
+            # calculate the crown ensemble
+            if args.aggregate == 'average':
+                output_pr = ccb.crown_ensemble.average(prob, id_labels, sp_labels)
                 
             # create the crown id labels (also, create the model.labels property)
-            cr_labels = np.repeat(crowns_unique, n_species)
-            sp_labels = np.repeat(model.labels, n_crowns).reshape(n_crowns, n_species).flatten(order='F')
+            id_rows, sp_rows = get_csv_labels(id_labels, sp_labels)
             
             # add everything to a pandas dataframe and save the result
-            df = pd.DataFrame.from_items((('crown', cr_labels), ('species', sp_labels), 
+            df = pd.DataFrame.from_items((('crown', id_rows), ('species', sp_rows), 
                                           ('probability', output_pr)))
             df.to_csv(args.output, index=False)
             
@@ -202,7 +209,9 @@ def main():
         # do it differently for csv vs raster
         if ccbid.read.is_csv(args.input):
             # write out results as a pandas dataframe
-            df = pd.DataFrame(prob, columns=model.labels)
+            df_id = pd.DataFrame.from_items(('id', id_labels))
+            df_pr = pd.DataFrame(prob, columns=sp_labels)
+            df = df_id.append(df_pr)
             df.to_csv(args.output, index=False)
     
     prnt.line_break()

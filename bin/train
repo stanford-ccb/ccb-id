@@ -27,7 +27,6 @@ def parse_args():
     
     # create the argument parser
     parser = args.create_parser(description='Train and save a CCB-ID species classification model.')
-    #parser = argparse.ArgumentParser(description='Train and save a CCB-ID species classification model.')
     
     # set up the arguments for dealing with file i/o
     args.input(parser)
