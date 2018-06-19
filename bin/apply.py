@@ -23,6 +23,7 @@ from sklearn import model_selection
 things to add to model object
 -reducer
 -bands
+-species names/IDs
 
 create ccbid model input argument
 """
@@ -53,9 +54,9 @@ def parse_args():
     # arguments to turn on certian flags or set specific parameters
     args.remove_outliers(parser)
     args.aggregate(parser) # write this, option to aggregate the data to other scales (e.g., crown scale)
-    args.aggregate_labels(parser) # write this, option to read image with crown labels
+    args.labels(parser) # write this, option to read image with crown labels
     #args.feature_selection(parser)
-    args.cpus(parser)
+    args.cpus(parser) # maybe add function to model object to update the n_cpus in each model
     args.verbose(parser)
 
     # parse the inputs from sys.argv
@@ -121,6 +122,7 @@ def main():
     if ccbid.read.is_csv(args.input):
         testing_id, features = ccbid.read.training_data(args.input)
         crowns_unique = np.unique(testing_id)
+        n_crowns = len(crowns_unique)
         
     #-----
     # step 2. outlier removal
@@ -162,16 +164,49 @@ def main():
         prnt.status("Applying CCBID model to input features")
     
     pred = model.predict(features)
-    prob = model.predict_proba(features)
+    prob = model.predict_proba(features, average_proba=True)
         
     # ensemble the pixels to the crown scale
-    if 
+    if args.aggregate:
+        # do it differently for csv vs raster
+        if ccbid.read.is_csv(args.input):
+            # create the output array to store the results
+            n_species = prob.shape[1]
+            output_pr = np.zeros(n_crowns * n_species)
+            
+            # loop through each crown, calculate the average probability per crown, and write it to the array
+            # !!! should probably move this to a ccbid function
+            for i in range(n_crowns):
+                crown_index = testing_id == crowns_unique[i]
+                output_pr[i * n_species:(i+1) * n_species] = prob[crown_index].mean(axis=0)
+                
+            # create the crown id labels (also, create the model.labels property)
+            cr_labels = np.repeat(crowns_unique, n_species)
+            sp_labels = np.repeat(model.labels, n_crowns).reshape(n_crowns, n_species).flatten(order='F')
+            
+            # add everything to a pandas dataframe and save the result
+            df = pd.DataFrame.from_items((('crown', cr_labels), ('species', sp_labels), 
+                                          ('probability', output_pr)))
+            df.to_csv(args.output, index=False)
+            
+        if ccbid.read.is_raster(args.input):
+            # get the crown IDs from a separate raster
+            try:
+                testing_id = ccbid.read.raster(args.labels)
+            except:
+                prnt.error("Unable to read label file: {}".format(args.labels))
+                prnt.error("Check the file path or run without the --aggregate option in order to obtain pixel-scale predictions")
     
-    # save the ccb model variable
-    ccbid.write.pck(args.output, m)
+    # or, output the raw predictions if not aggregating
+    else:
+        # do it differently for csv vs raster
+        if ccbid.read.is_csv(args.input):
+            # write out results as a pandas dataframe
+            df = pd.DataFrame(prob, columns=model.labels)
+            df.to_csv(args.output, index=False)
     
     prnt.line_break()
-    prnt.status("CCB-ID model training complete!")
+    prnt.status("CCB-ID model application complete!")
     prnt.status("Please see the final output file:")
     prnt.status("  {}".format(args.output))
     prnt.line_break()
