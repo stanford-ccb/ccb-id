@@ -2,12 +2,12 @@
 
 The Stanford Center for Conservation Biology's imaging-spectroscopy-based species classification approach.
 
-This work is described in Anderson, 2018, [The CCB-ID approach to tree species mapping with airborne imaging spectroscopy](https://ccb.stanford.edu). It was developed as part of the NEON-NIST [ECODSE](http://www.ecodse.org/) data science evaluation competition.
+This work is described in Anderson, 2018, [The CCB-ID approach to tree species mapping with airborne imaging spectroscopy](https://peerj.com/preprints/26972/). It was developed as part of the NEON-NIST [ECODSE](http://www.ecodse.org/) data science evaluation competition.
 
 All (c) 2018 Christopher B. Anderson
 - [E-mail](mailto:cbanders@stanford.edu)
 - [Google Scholar](https://scholar.google.com/citations?user=LoGxS40AAAAJ&hl=en)
-- [Personal website](https://cbanderson.info)
+- [Personal website](https://christobal54.github.io/)
  
 ## Functionality
 
@@ -47,7 +47,7 @@ train -o ecodse-model -e -v
 apply -m ecodse-model -o ecodse-results.csv -e -v
 ```
 
-Where the output file `ecodse-results.csv` will have the output species prediction probabilities. The `-e` flag ensure the ECODSE data will be used, and the `-v` flag sets the module to verbose mode to report classification metrics.
+Where the output file `ecodse-results.csv` will have the output species prediction probabilities. The `-e` flag ensure the ECODSE data will be used, and the `-v` flag sets the module to verbose mode to report classification metrics. If you *really* want to find the original results, see this [scrappy code](https://github.com/christobal54/aei-grad-school/blob/master/bin/neon-classification.py)
 
 ## Using other data
 
