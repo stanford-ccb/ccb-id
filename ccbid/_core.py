@@ -80,7 +80,7 @@ def get_sample_weights(y):
 #-----
 class model:
     def __init__(self, models=None, params=None, calibrator=None, run_calibration=None, 
-                 average_proba=True):
+                 average_proba=True, labels=None, good_bands=None):
         """Creates an object to build the CCB-ID models. Should approximate the functionality
         of the sklearn classifier modules, though not perfectly.
         
@@ -93,6 +93,8 @@ class model:
             run_calibration - a boolean array with True values for models you want to calibrate, 
                               and False values for models that do not require calibration
             average_proba   - flag to report the output probabilities as the average across models
+            labels          - the species labels for each class
+            good_bands      - a boolean array of good band values to store (but not used by this object)
             
         Returns:
             a CCB-ID model object with totally cool functions and attributes.
@@ -134,6 +136,18 @@ class model:
         # set the flag to average the probability outputs    
         self.average_proba_ = average_proba
         
+        # and set some properties that will be referenced later
+        #  like species labels and a list of good bands
+        if labels is None:
+            self.labels_ = None
+        else:
+            self.labels_ = labels
+            
+        if good_bands is None:
+            self.good_bands_ = None
+        else:
+            self.good_bands_ = good_bands
+        
     def fit(self, x, y, sample_weight=None):
         """Fits each classification model
         
@@ -147,6 +161,14 @@ class model:
         """
         for i in range(self.n_models_):
             self.models_[i].fit(x, y, sample_weight=sample_weight)
+            
+        # have this function update the species labels if not already set
+        if self.labels_ is None:
+            labels=[]
+            y_unique = _np.unique(y)
+            for unique in y_unique:
+                labels.append("SP-{}".format(unique))
+            self.labels_ = labels
     
     def calibrate(self, x, y, run_calibration=None):
         """Calibrates the probabilities for each classification model
