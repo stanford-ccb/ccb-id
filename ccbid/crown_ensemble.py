@@ -16,7 +16,7 @@ def average(predictions, id_labels, sp_labels):
     
     # loop through each crown, calculate the average probability per crown, and write it to the array
     # !!! should probably move this to a ccbid function
-    for i in range(n_ids):
+    for i in range(n_id):
         id_index = id_labels == id_unique[i]
         output_pr[i * n_sp:(i+1) * n_sp] = predictions[id_index].mean(axis=0)
     
@@ -34,6 +34,6 @@ def get_csv_labels(id_labels, sp_labels):
     n_sp = len(sp_unique)
     
     id_rows = _np.repeat(id_unique, n_sp)
-    sp_rows = _np.repeat(sp_unique, n_id).reshape(n_id, n_sp).flatten(order='F')
+    sp_rows = _np.repeat(sp_unique, n_id).reshape(n_sp, n_id).flatten(order='F')
     
     return id_rows, sp_rows
