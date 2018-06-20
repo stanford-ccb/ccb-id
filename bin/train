@@ -52,7 +52,7 @@ def parse_args():
 
 
 # set up the logic to parse command line arguments and ensure consistent logic
-def arg_logic(args):
+def arg_logic(argv):
     """Parses the command line arguments to ensure consistency prior to running the main script
     
     Args:
@@ -63,17 +63,17 @@ def arg_logic(args):
     """
     
     # if the ECODSE flag is set, override whatever is set at the command line
-    if args.ecodse:
-        args.input = path_training
-        args.crowns = path_crowns
-        args.reducer = path_reducer
-        args.n_features = 100
-        args.models = [path_gbc, path_rfc]
-        args.bands = path_bands
-        args.remove_outliers = 'PCA'
-        args.split = 'sample'
-        args.tune = False
-        args.feature_selection = False
+    if argv.ecodse:
+        argv.input = args.path_training
+        argv.crowns = args.path_crowns
+        argv.reducer = args.path_reducer
+        argv.n_features = 100
+        argv.models = [args.path_gbc, args.path_rfc]
+        argv.bands = args.path_bands
+        argv.remove_outliers = 'PCA'
+        argv.split = 'sample'
+        argv.tune = False
+        argv.feature_selection = False
 
 
 # set up the main script function
@@ -88,10 +88,10 @@ def main():
     """
     
     # first read the command line arguments
-    args = parse_args()
+    argv = parse_args()
     
     # parse the logic to make sure everything runs smoothly
-    arg_logic(args)
+    arg_logic(argv)
     
     # set the seed for reproducibility (to the year the CCB was founded)
     np.random.seed(1984)
@@ -100,13 +100,13 @@ def main():
     # step 1. reading data
     #-----
     
-    if args.verbose:
+    if argv.verbose:
         prnt.line_break()
         prnt.status("Reading input data")
         
-    training_id, features = ccbid.read.training_data(args.input)
-    crown_id, species_id, species_name = ccbid.read.species_id(args.crowns)
-    wavelengths, good_bands = ccbid.read.bands(args.bands)
+    training_id, features = ccbid.read.training_data(argv.input)
+    crown_id, species_id, species_name = ccbid.read.species_id(argv.crowns)
+    wavelengths, good_bands = ccbid.read.bands(argv.bands)
     species_unique, crowns_unique, crown_labels = \
         ccbid.match_species_ids(training_id, crown_id, species_id)
         
@@ -114,12 +114,12 @@ def main():
     # step 2. outlier removal
     #-----
     
-    if args.remove_outliers is not None:
-        if args.verbose:
-            prnt.status("Removing outliers using {}".format(args.remove_outliers))
+    if argv.remove_outliers is not None:
+        if argv.verbose:
+            prnt.status("Removing outliers using {}".format(argv.remove_outliers))
             
         # currently only one version of outlier removal
-        if args.remove_outliers == 'PCA':
+        if argv.remove_outliers == 'PCA':
             mask = ccbid.outliers.with_pca(features[:, good_bands])
             
         # subset all data using the mask for future analyses
@@ -128,7 +128,7 @@ def main():
         crown_labels = crown_labels[mask]
         
         # report on the number of samples removed
-        if args.verbose:
+        if argv.verbose:
             n_removed = mask.shape[0] - mask.sum()
             prnt.status("Removed {} samples".format(n_removed))
         
@@ -137,27 +137,27 @@ def main():
     #-----
     
     # first, transform the data
-    if args.reducer is not None:
-        if args.verbose:
+    if argv.reducer is not None:
+        if argv.verbose:
             prnt.status("Transforming feature data")
             
-        features = ccbid.transform.from_path(args.reducer, features[:, good_bands], args.n_features)
+        features = ccbid.transform.from_path(argv.reducer, features[:, good_bands], argv.n_features)
         
     # ok, now to do something kinda weird
     # in the original submission, I had resampled the data, then split into train/test sets
     # this is bad practice, since I used the same data to train/calibrate/test the model
     # so we'll keep that consistent here for reproducibility, but we'll do it better for other runs
     
-    if args.verbose:
+    if argv.verbose:
         prnt.status("Splitting train / test data")
         
-    if args.ecodse:
+    if argv.ecodse:
         features, crown_labels, training_id = ccbid.resample.uniform(features, crown_labels, other_array=training_id)
         
     # set the label to split the data on samples or crowns
-    if args.split == 'sample':
+    if argv.split == 'sample':
         stratify = crown_labels
-    elif args.split == 'crown':
+    elif argv.split == 'crown':
         # ok, so, I think this is actually not quite what I want it to be, but
         # I think it will work pretty well
         stratify = training_id
@@ -173,20 +173,20 @@ def main():
     # step 4: model training
     #-----
     
-    if args.verbose:
+    if argv.verbose:
         prnt.line_break()
         prnt.status("Starting model training")
     
     # first, load up the models
     models = []
-    for m in args.models:
+    for m in argv.models:
         models.append(ccbid.read.pck(m))
         
     # then create the ccbid model object
-    m = ccbid.model(models=models, average_proba=False)
+    m = ccbid.model(models=models, average_proba=False, labels=species_unique, good_bands=good_bands)
     
     # tune 'em if you got 'em
-    if args.tune:
+    if argv.tune:
         # deal with this guy later
         prnt.error("Sorry - not yet implemented!")
         
@@ -195,7 +195,7 @@ def main():
     m.fit(xtrain, ytrain, sample_weight=wtrain)
     
     # assess the fit on test data
-    if args.verbose:
+    if argv.verbose:
         prnt.status("Assessing model training performance")
         ypred = m.predict(xctest)
         yprob = m.predict_proba(xctest)
@@ -209,7 +209,7 @@ def main():
     m.calibrate(xctrain, yctrain)
     
     # assess the fit on test data
-    if args.verbose:
+    if argv.verbose:
         prnt.status("Asessing model calibration")
         ypred = m.predict(xctest, use_calibrated=True)
         yprob = m.predict_proba(xctest, use_calibrated=True)
@@ -220,7 +220,7 @@ def main():
             prnt.model_report(yctest, ypred[:,i], yprob[:, :, i])
             
     # finally, re-run the training/calibration using the full data set 
-    if args.verbose:
+    if argv.verbose:
         prnt.status("Fitting final model")
     
     m.fit(np.append(xtrain, xctest, axis=0), np.append(ytrain, yctest))
@@ -228,12 +228,12 @@ def main():
     m.average_proba_ = True
     
     # save the ccb model variable
-    ccbid.write.pck(args.output, m)
+    ccbid.write.pck(argv.output, m)
     
     prnt.line_break()
     prnt.status("CCB-ID model training complete!")
     prnt.status("Please see the final output file:")
-    prnt.status("  {}".format(args.output))
+    prnt.status("  {}".format(argv.output))
     prnt.line_break()
     
     # phew
