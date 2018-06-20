@@ -48,7 +48,7 @@ def parse_args():
     args.mask(parser) # write this, option to pass a good-data mask
     args.output(parser)
     args.ecodse(parser)
-    args.ccbid_model(parser)
+    args.models(parser, help='path to the ccbid model to apply', default=None, required=True)
 
     # arguments to turn on certian flags or set specific parameters
     args.remove_outliers(parser)
@@ -62,7 +62,7 @@ def parse_args():
 
 
 # set up the logic to parse command line arguments and ensure consistent logic
-def arg_logic(args):
+def arg_logic(argv):
     """Parses the command line arguments to ensure consistency prior to running the main script
     
     Args:
@@ -74,9 +74,9 @@ def arg_logic(args):
     
     # if the ECODSE flag is set, override whatever is set at the command line
     if args.ecodse:
-        args.input = args.path_training
-        args.remove_outliers = False
-        args.aggregate = 'average'
+        argv.input = args.path_training
+        argv.remove_outliers = False
+        argv.aggregate = 'average'
         #args.feature_selection = False
 
 
@@ -92,10 +92,10 @@ def main():
     """
     
     # first read the command line arguments
-    args = parse_args()
+    argv = parse_args()
     
     # parse the logic to make sure everything runs smoothly
-    arg_logic(args)
+    arg_logic(argv)
     
     # set the seed for reproducibility (to the year the CCB was founded)
     np.random.seed(1984)
@@ -104,12 +104,12 @@ def main():
     # step 1. reading data
     #-----
     
-    if args.verbose:
+    if argv.verbose:
         prnt.line_break()
         prnt.status("Reading input data")
     
     # first read the model data
-    model = ccbid.read.pck(args.ccbid_model)
+    model = ccbid.read.pck(argv.model[0])
     
     # get base data from the model
     sp_labels = model.labels_
@@ -118,44 +118,55 @@ def main():
     
     # then read the feature data, which may come as a raster or a csv
     if ccbid.read.is_raster(args.input):
-        raster = ccbid.read.raster(args.input)
+        raster = ccbid.read.raster(argv.input)
         raster.read_all()
         
         # if a mask is set, just apply the model to those data
-        if args.mask is not None:
-            mask = ccbid.read.raster(args.mask)
+        if argv.mask is not None:
+            mask = ccbid.read.raster(argv.mask)
             mask_ind = mask.read_band(1).data == 1
             features = raster.data[mask_ind]
             mask.data = None
             
-        # otherwise, flatten the data from [x, y, features] to [rows, features]
-        features = raster.data.reshape((raster.nx * raster.ny, raster.nb))
+        # if no mask is set, just use the straight image data
+        else:
+            # first, check for no-data values
+            if raster.no_data is not None:
+                features = raster.data[raster.data != raster.no_data]
+            
+            # otherwise, flatten the data from [x, y, features] to [rows, features]
+            else:    
+                features = raster.data.reshape((raster.nx * raster.ny, raster.nb))
         
         # and clear memory
         raster.data = None
         # work on this later
         
-    if ccbid.read.is_csv(args.input):
-        id_labels, features = ccbid.read.training_data(args.input)
+    if ccbid.read.is_csv(argv.input):
+        id_labels, features = ccbid.read.training_data(argv.input)
+        
+    # subset the features by band if the model contains a good bands attribute
+    if model.good_bands_ is not None:
+        features = features[:, model.good_bands_]
         
     #-----
     # step 2. outlier removal
     #-----
     
-    if args.remove_outliers is not None:
-        if args.verbose:
-            prnt.status("Removing outliers using {}".format(args.remove_outliers))
+    if argv.remove_outliers:
+        if argv.verbose:
+            prnt.status("Removing outliers using {}".format(argv.remove_outliers))
             
         # currently only one version of outlier removal
-        if args.remove_outliers == 'PCA':
-            mask = ccbid.outliers.with_pca(features[:, model.good_bands])
+        if argv.remove_outliers == 'PCA':
+            mask = ccbid.outliers.with_pca(features)
             
         # subset all data using the mask for future analyses
         features = features[mask, :]
         id_labels = id_labels[mask]
         
         # report on the number of samples removed
-        if args.verbose:
+        if argv.verbose:
             n_removed = mask.shape[0] - mask.sum()
             prnt.status("Removed {} samples".format(n_removed))
         
@@ -164,7 +175,7 @@ def main():
     #-----
     
     if model.reducer is not None:
-        if args.verbose:
+        if argv.verbose:
             prnt.status("Transforming feature data")
         
         features = model.reducer.transform(features[:, model.good_bands])
@@ -173,7 +184,7 @@ def main():
     # step 4: applying the model
     #-----
     
-    if args.verbose:
+    if argv.verbose:
         prnt.line_break()
         prnt.status("Applying CCBID model to input features")
     
@@ -181,9 +192,9 @@ def main():
     prob = model.predict_proba(features, average_proba=True)
         
     # ensemble the pixels to the crown scale
-    if args.aggregate is not None:
+    if argv.aggregate is not None:
         # do it differently for csv vs raster
-        if ccbid.read.is_csv(args.input):
+        if ccbid.read.is_csv(argv.input):
             # calculate the crown ensemble
             if args.aggregate == 'average':
                 output_pr = ccbid.crown_ensemble.average(prob, id_labels, sp_labels)
@@ -194,30 +205,30 @@ def main():
             # add everything to a pandas dataframe and save the result
             df = pd.DataFrame.from_items((('crown', id_rows), ('species', sp_rows), 
                                           ('probability', output_pr)))
-            df.to_csv(args.output, index=False)
+            df.to_csv(argv.output, index=False)
             
         if ccbid.read.is_raster(args.input):
             # get the crown IDs from a separate raster
             try:
-                testing_id = ccbid.read.raster(args.labels)
+                testing_id = ccbid.read.raster(argv.labels)
             except:
-                prnt.error("Unable to read label file: {}".format(args.labels))
+                prnt.error("Unable to read label file: {}".format(argv.labels))
                 prnt.error("Check the file path or run without --aggregate to obtain pixel-scale predictions")
     
     # or, output the raw predictions if not aggregating
     else:
         # do it differently for csv vs raster
-        if ccbid.read.is_csv(args.input):
+        if ccbid.read.is_csv(argv.input):
             # write out results as a pandas dataframe
             df_id = pd.DataFrame.from_items(('id', id_labels))
             df_pr = pd.DataFrame(prob, columns=sp_labels)
             df = df_id.append(df_pr)
-            df.to_csv(args.output, index=False)
+            df.to_csv(argv.output, index=False)
     
     prnt.line_break()
     prnt.status("CCB-ID model application complete!")
     prnt.status("Please see the final output file:")
-    prnt.status("  {}".format(args.output))
+    prnt.status("  {}".format(argv.output))
     prnt.line_break()
     
     # phew
