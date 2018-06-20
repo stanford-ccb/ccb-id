@@ -64,9 +64,10 @@ def n_features(parser):
     return parser
     
 
-def models(parser):
-    parser.add_argument('-m', '--models', help='paths to classification models to use',
-                        nargs='+', default=[path_gbc, path_rfc], type=str)
+def models(parser, help='paths to classification model(s) to use', default=[path_gbc, path_rfc], 
+           required=False):
+    parser.add_argument('-m', '--model', help=help, nargs='+', default=default, 
+                        type=str, required=required)
     return parser
     
 
