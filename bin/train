@@ -1,11 +1,10 @@
 #! /usr/bin/env python
-"""
+"""Trains a ccbid model to classify tree species
 """
 
 import sys
 import ccbid
 import numpy as np
-import multiprocessing
 from ccbid import args
 from ccbid import prnt
 from sklearn import metrics
