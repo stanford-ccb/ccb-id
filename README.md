@@ -11,7 +11,7 @@ All (c) 2018 Christopher B. Anderson
  
 ## Functionality
 
-The CCB-ID package can be used in two ways. First, you can run the scripts for training and applying species classification models (under `bin/train` and `bin/apply` respectively). Second, you could import the underlying python functions used in these scripts using `import ccbid` (based on the functions in `ccbid/_core.py`.
+The CCB-ID package can be used in two ways. First, you can run the scripts for training and applying species classification models (under `bin/train` and `bin/apply` respectively). Second, you could import the underlying python functions used in these scripts using `import ccbid` (based on the functions in the `ccbid/` directory.
 
 If you install this package using Singularity (e.g., following the [Singularity install instructions](#singularity)), you could train and apply the models using the following commands.
 
@@ -25,11 +25,13 @@ You could also import the functions from `ccbid.py` in the singularity shell env
 ```sh
 ccb-id ipython
 import ccbid
-ccbid.read.bands('/ccb/ccb-id/suport_files/neon-bands.csv')
+ccbid.read.bands('ccbid/suport_files/neon-bands.csv')
 # etc.
 ```
 
-Run `ccb-id train -h` and `ccb-id apply -h` to review command line options. Please note the `apply` function is still in development - will have a v1 soon!
+Run `ccb-id train -h` and `ccb-id apply -h` to review command line options. 
+
+These scripts are intended to work with csv and raster data inputs. HDF support is planned. However, support for raster-based data is currently limited (hdf support is even more so). Please let me know if this is something you would use and I can get my `[redacted]` together.
 
 ## ECODSE results
 
@@ -47,7 +49,9 @@ train -o ecodse-model -e -v
 apply -m ecodse-model -o ecodse-results.csv -e -v
 ```
 
-Where the output file `ecodse-results.csv` will have the output species prediction probabilities. The `-e` flag ensure the ECODSE data will be used, and the `-v` flag sets the module to verbose mode to report classification metrics. If you *really* want to find the original results, see this [scrappy code](https://github.com/christobal54/aei-grad-school/blob/master/bin/neon-classification.py)
+Where the output file `ecodse-results.csv` will have the output species prediction probabilities. The `-e` flag ensure the ECODSE data will be used, and the `-v` flag sets the module to verbose mode to report classification metrics. 
+
+Due to some versioning issues, the results are not exactly the same as what was submitted. If you *really* want to find the original results, see the original [scrappy code](https://github.com/christobal54/aei-grad-school/blob/master/bin/neon-classification.py).
 
 ## Using other data
 
@@ -118,6 +122,6 @@ But at that point I think you're better of running the Singularity [install](#si
 
 ## Additional information
 
-That's all, folks!
+That's all, folks
 
 You've surely read enough. Go reward yourself by grabbing a warm beverage and perusing [any](http://70sscifiart.tumblr.com/) of [these](https://wearethemutants.com/) cool and good  [sites](http://www.iamag.co/features/the-art-of-moebius/).
