@@ -1,6 +1,7 @@
 .zedstate
 *.pyc
 ccbid/*.pyc
+.idea/*
 
 # and ignore the scripts I have to help remember how to merge these dang commits
 develop-to-master.sh
