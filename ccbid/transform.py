@@ -32,6 +32,6 @@ def from_path(path, features, n_features=None):
     
     # ship the transformed data
     if n_features is None:
-        return transformed
+        return reducer, transformed
     else:
-        return transformed[:, 0:n_features]
+        return reducer, transformed[:, 0:n_features]
