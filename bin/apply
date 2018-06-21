@@ -7,6 +7,7 @@ import sys
 import ccbid
 import argparse
 import numpy as np
+import pandas as pd
 import multiprocessing
 from ccbid import args
 from ccbid import prnt
@@ -74,8 +75,9 @@ def arg_logic(argv):
     
     # if the ECODSE flag is set, override whatever is set at the command line
     if args.ecodse:
-        argv.input = args.path_training
-        argv.remove_outliers = False
+        argv.input = args.path_testing
+        argv.remove_outliers = 'PCA'
+        argv.threshold = 4
         argv.aggregate = 'average'
         #args.feature_selection = False
 
@@ -117,7 +119,10 @@ def main():
     # set up a dummy variable to determine if data should be output on a per-crown or per-=pixel basis
     
     # then read the feature data, which may come as a raster or a csv
-    if ccbid.read.is_raster(args.input):
+    if ccbid.read.is_csv(argv.input):
+        id_labels, features = ccbid.read.training_data(argv.input)
+    
+    elif ccbid.read.is_raster(args.input):
         raster = ccbid.read.raster(argv.input)
         raster.read_all()
         
@@ -142,8 +147,9 @@ def main():
         raster.data = None
         # work on this later
         
-    if ccbid.read.is_csv(argv.input):
-        id_labels, features = ccbid.read.training_data(argv.input)
+    else:
+        prnt.error("Unsupported file format. Must be a csv or a raster file.")
+        sys.exit(1)
         
     # subset the features by band if the model contains a good bands attribute
     if model.good_bands_ is not None:
@@ -159,7 +165,7 @@ def main():
             
         # currently only one version of outlier removal
         if argv.remove_outliers == 'PCA':
-            mask = ccbid.outliers.with_pca(features)
+            mask = ccbid.outliers.with_pca(features, thresh=argv.threshold)
             
         # subset all data using the mask for future analyses
         features = features[mask, :]
@@ -178,7 +184,11 @@ def main():
         if argv.verbose:
             prnt.status("Transforming feature data")
         
-        features = model.reducer.transform(features[:, model.good_bands])
+        features = model.reducer.transform(features)
+        
+        # then supbset the transformed features
+        if model.n_features_ is not None:
+            features = features[:, 0:model.n_features_]
         
     #-----
     # step 4: applying the model
@@ -193,10 +203,12 @@ def main():
         
     # ensemble the pixels to the crown scale
     if argv.aggregate is not None:
+        
         # do it differently for csv vs raster
         if ccbid.read.is_csv(argv.input):
+            
             # calculate the crown ensemble
-            if args.aggregate == 'average':
+            if argv.aggregate == 'average':
                 output_pr = ccbid.crown_ensemble.average(prob, id_labels, sp_labels)
                 
             # create the crown id labels (also, create the model.labels property)
@@ -207,7 +219,7 @@ def main():
                                           ('probability', output_pr)))
             df.to_csv(argv.output, index=False)
             
-        if ccbid.read.is_raster(args.input):
+        elif ccbid.read.is_raster(argv.input):
             # get the crown IDs from a separate raster
             try:
                 testing_id = ccbid.read.raster(argv.labels)
