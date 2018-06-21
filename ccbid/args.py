@@ -11,6 +11,7 @@ pbase = _os.path.dirname(ppkg)
 psup = ps.join([pbase, 'support_files'])
 
 path_training = ps.join([psup, 'training.csv'])
+path_testing = ps.join([psup, 'testing.csv'])
 path_reducer = ps.join([psup, 'reducer.pck'])
 path_crowns = ps.join([psup, 'species_id.csv'])
 path_bands = ps.join([psup, 'neon-bands.csv'])
@@ -93,6 +94,10 @@ def mask(parser):
 def remove_outliers(parser):
     parser.add_argument('-r', '--remove-outliers', help='flag to remove outliers using PCA',
                         choices=['PCA'], default=None)
+    return parser
+    
+def outlier_threshold(parser):
+    parser.add_argument('--threshold', help='the threshold for outlier removal', default=3)
     return parser
 
 def split(parser):
