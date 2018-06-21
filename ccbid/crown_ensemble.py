@@ -5,7 +5,14 @@ import numpy as _np
 
 # a function to average probabilities by crown id
 def average(predictions, id_labels, sp_labels):
-    """Not yet implemented
+    """Sets the output labels for prediction probabilities by id (e.g., by crown) and by species.
+    
+    Args: 
+        id_labels - the labels (usually, crown labels) that probabilities are aggregated to
+        sp_labels - the species labels
+           
+    Returns:
+        output_pr - the averaged prediction probabilities
     """
     # create the output array to store the results
     id_unique = _np.unique(id_labels)
@@ -25,7 +32,14 @@ def average(predictions, id_labels, sp_labels):
 
 # a function to reconcile the crown and species labels for csv output
 def get_csv_labels(id_labels, sp_labels):
-    """
+    """Sets the output labels for prediction probabilities by id (e.g., by crown) and by species.
+    
+    Args: 
+        id_labels - the labels (usually, crown labels) that probabilities are aggregated to
+        sp_labels - the species labels
+        
+    Returns:
+        id_rows, sp_rows - the csv ordered id and species labels
     """
     # get the unique id and species labels
     id_unique = _np.unique(id_labels)
