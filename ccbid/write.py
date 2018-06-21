@@ -6,15 +6,15 @@ import pickle as _pickle
 class predictions:
     def __init__(self):
         pass
-    
+
     @staticmethod
     def to_csv(path, predictions, crown_ids, species_ids):
         pass
-    
+
     @staticmethod
     def to_raster(path, predictions, gdal_params):
         pass
-    
+
 
 def pck(path, variable):
     """Writes a python/pickle format data file

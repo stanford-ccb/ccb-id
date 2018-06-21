@@ -19,14 +19,14 @@ def with_pca(features, n_pcs=20, thresh=3):
     """
     # create the bool mask where outlier samples will be flagged as False
     mask = _np.repeat(True, features.shape[0])
-    
+
     # set up the pca reducer, then transform the data
     reducer = _PCA(n_components=n_pcs, whiten=True)
     transformed = reducer.fit_transform(features)
-    
+
     # loop through the number of pcs set and flag values outside the threshold
     for i in range(n_pcs):
         outliers = abs(transformed[:, i]) > thresh
         mask[outliers] = False
-    
+
     return mask

@@ -1,22 +1,14 @@
-import os as _os
-import numpy as _np
-import pandas as _pd
-import gdal as _gdal
 import copy as _copy
-import pickle as _pickle
-from sklearn import utils as _utils
-from sklearn import metrics as _metrics
-from sklearn import ensemble as _ensemble
-from sklearn import multiclass as _multiclass
-from sklearn import calibration as _calibration
-from sklearn import preprocessing as _preprocessing
-from sklearn import model_selection as _model_selection
-from matplotlib import pyplot as _plt
+import os as _os
 
+import numpy as _np
+from sklearn import calibration as _calibration
+from sklearn import ensemble as _ensemble
+from sklearn import utils as _utils
 
 _path = _os.path.realpath(__file__)
-    
-    
+
+
 def match_species_ids(crown_id, label_id, labels):
     """Matches the crown IDs from the training data with the labels associated with species IDs
     
@@ -35,20 +27,19 @@ def match_species_ids(crown_id, label_id, labels):
     # get the unique labels and crown id's
     unique_labels = _np.unique(labels)
     unique_crowns = _np.unique(crown_id)
-    n_labels = len(unique_labels)
     n_crowns = len(unique_crowns)
-    
+
     # set up the output array
     nchar = _np.max([len(label) for label in unique_labels])
     crown_labels = _np.chararray(len(crown_id), itemsize=nchar)
-    
+
     for i in range(n_crowns):
         index_crown = crown_id == unique_crowns[i]
         index_label = label_id == unique_crowns[i]
         crown_labels[index_crown] = labels[index_label]
-            
+
     return [unique_labels, unique_crowns, crown_labels]
-    
+
 
 def get_sample_weights(y):
     """Calculates the balanced sample weights for a set of unique classes
@@ -62,24 +53,24 @@ def get_sample_weights(y):
     # get the unique classes in the array
     classes = _np.unique(y)
     n_classes = len(classes)
-    
+
     # calculate the per-class weights
     weights_class = _utils.class_weight.compute_class_weight('balanced', classes, y)
-    
+
     # create and return an array the same dimensions as the input y vector
     weights_sample = _np.zeros(len(y))
     for i in range(n_classes):
         ind_y = y == classes[i]
         weights_sample[ind_y] = weights_class[i]
-        
+
     return weights_sample
 
-    
-#-----
+
+# -----
 # functions to handle the CCB-ID classification models
-#-----
+# -----
 class model:
-    def __init__(self, models=None, params=None, calibrator=None, run_calibration=None, 
+    def __init__(self, models=None, params=None, calibrator=None, run_calibration=None,
                  average_proba=True, labels=None, good_bands=None, reducer=None):
         """Creates an object to build the CCB-ID models. Should approximate the functionality
         of the sklearn classifier modules, though not perfectly.
@@ -110,52 +101,52 @@ class model:
             if type(models) is not list:
                 models = list(models)
             self.models_ = models
-            
+
         # set an attribute with the number of models
         self.n_models_ = len(self.models_)
-            
+
         # set the model parameters if specified
         if params is not None:
             for i in range(self.n_models_):
-                self.models[i].set_params(**params[i])
-        
+                self.models_[i].set_params(**params[i])
+
         # set the model calibration function
         if calibrator is None:
             self.calibrator = _calibration.CalibratedClassifierCV(method='sigmoid', cv=3)
         else:
             self.calibrator = calibrator
-            
+
         # set the attribute determining whether to perform calibration on a per-model basis
         if run_calibration is None:
             self.run_calibration_ = _np.repeat(True, self.n_models_)
         else:
             self.run_calibration_ = run_calibration
-            
+
         # set an attribute to hold the final calibrated models
         self.calibrated_models_ = _np.repeat(None, self.n_models_)
-        
+
         # set the flag to average the probability outputs    
         self.average_proba_ = average_proba
-        
+
         # and set some properties that will be referenced later
         #  like species labels and a list of good bands
         if labels is None:
             self.labels_ = None
         else:
             self.labels_ = labels
-            
+
         if good_bands is None:
             self.good_bands_ = None
         else:
             self.good_bands_ = good_bands
-            
+
         if reducer is None:
             self.reducer = None
         else:
             self.reducer = reducer
-            
+
         self.n_features_ = None
-        
+
     def fit(self, x, y, sample_weight=None):
         """Fits each classification model
         
@@ -169,15 +160,15 @@ class model:
         """
         for i in range(self.n_models_):
             self.models_[i].fit(x, y, sample_weight=sample_weight)
-            
+
         # have this function update the species labels if not already set
         if self.labels_ is None:
-            labels=[]
+            labels = []
             y_unique = _np.unique(y)
             for unique in y_unique:
                 labels.append("SP-{}".format(unique))
             self.labels_ = labels
-    
+
     def calibrate(self, x, y, run_calibration=None):
         """Calibrates the probabilities for each classification model
         
@@ -191,16 +182,16 @@ class model:
             None. Updates each item in self.calibrated_models_
         """
         for i in range(self.n_models_):
-            if self.run_calibration_[i]:
+            if self.run_calibration_[i] or run_calibration[i]:
                 self.calibrator.set_params(base_estimator=self.models_[i])
                 self.calibrator.fit(x, y)
                 self.calibrated_models_[i] = _copy.copy(self.calibrator)
             else:
                 self.calibrated_models_[i] = _copy.copy(self.models_[i])
-    
+
     def tune(self, x, y, param_grids, criterion):
         pass
-    
+
     def predict(self, x, use_calibrated=False):
         """Predict the class labels for given feature data
         
@@ -217,14 +208,14 @@ class model:
                 predicted = self.calibrated_models_[i].predict(x)
             else:
                 predicted = self.models_[i].predict(x)
-            
+
             if i == 0:
                 output = _np.expand_dims(predicted, 1)
             else:
                 output = _np.append(output, _np.expand_dims(predicted, 1), axis=1)
-        
+
         return output
-    
+
     def predict_proba(self, x, use_calibrated=False, average_proba=None):
         """Predict the probabilities for each class label
         
@@ -236,24 +227,24 @@ class model:
         """
         if average_proba:
             self.average_proba_ = True
-            
+
         for i in range(self.n_models_):
             if use_calibrated:
                 predicted = self.calibrated_models_[i].predict_proba(x)
             else:
                 predicted = self.models_[i].predict_proba(x)
-            
+
             if i == 0:
                 output = _np.expand_dims(predicted, 2)
             else:
                 output = _np.append(output, _np.expand_dims(predicted, 2), axis=2)
-        
+
         # average the final probabilities, if set
         if self.average_proba_:
             return output.mean(axis=2)
         else:
             return output
-    
+
     def set_params(self, params):
         """Sets the parameters for each model
            

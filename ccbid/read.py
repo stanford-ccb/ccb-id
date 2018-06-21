@@ -1,10 +1,12 @@
 """A series of functions for reading CCB-ID formatted data
 """
 import os as _os
-import numpy as _np
-import gdal as _gdal
-import pandas as _pd
 import pickle as _pickle
+
+import gdal as _gdal
+import numpy as _np
+import pandas as _pd
+
 _gdal.UseExceptions()
 
 
@@ -24,7 +26,7 @@ def bands(path):
     wavelengths = _np.array(df['Wavelength'])
     flag = _np.array(df['Flag'])
     good_bands = flag == 1
-    
+
     return [wavelengths, good_bands]
 
 
@@ -42,12 +44,12 @@ def species_id(path):
         species_name - an array with the species names per crown
     """
     df = _pd.read_csv(path)
-    crown_id = _np.array(df['crown_id'])
-    species_id = _np.array(df['species_id'])
-    species_name = _np.array(df['species'])
-    
-    return [crown_id, species_id, species_name]
-    
+    cr_id = _np.array(df['crown_id'])
+    sp_id = _np.array(df['species_id'])
+    sp_name = _np.array(df['species'])
+
+    return [cr_id, sp_id, sp_name]
+
 
 def genus_id(path):
     """Reads the genus identities from a csv file 
@@ -63,11 +65,11 @@ def genus_id(path):
         genus_name - an array with the genus names per crown
     """
     df = _pd.read_csv(path)
-    crown_id = _np.array(df['crown_id'])
-    genus_id = _np.array(df['genus_id'])
-    genus_name = _np.array(df['genus'])
-    
-    return [crown_id, genus_id, genus_name]
+    cr_id = _np.array(df['crown_id'])
+    ge_id = _np.array(df['genus_id'])
+    ge_name = _np.array(df['genus'])
+
+    return [cr_id, ge_id, ge_name]
 
 
 def training_data(path):
@@ -83,9 +85,9 @@ def training_data(path):
         features - an array of input feature data with shape (n_samples, n_features)
     """
     df = _pd.read_csv(path)
-    crown_id = _np.array(df.iloc[:,0])
-    features = _np.array(df.iloc[:,1:])
-    
+    crown_id = _np.array(df.iloc[:, 0])
+    features = _np.array(df.iloc[:, 1:])
+
     return [crown_id, features]
 
 
@@ -96,16 +98,16 @@ def is_raster(path):
         path     - the path to the file to check
         
     Returns:
-        True if it is a raster, False if no.
+        True if it is a raster, False if not.
     """
     # its a dang raster if GDAL can open it
     try:
         ref = _gdal.Open(path)
+        ref = None
+        return True
     except:
         return False
-    
-    ref = None
-    return True
+
 
 def is_csv(path):
     """Tests if a file is a CSV (i.e., pandas readable)
@@ -138,7 +140,6 @@ def pck(path):
 
 
 class raster:
-    # the init class that stores the raster metadata as variables
     def __init__(self, input_file):
         """Reads metadata from a raster file and stores it in an object
 
@@ -209,7 +210,6 @@ class raster:
         """Reads all bands of raster data
 
         Args:
-            None
 
         Returns:
             the aei.raster object with the object.data variable updated with a
@@ -255,7 +255,7 @@ class raster:
         """Updates the metadata of a file if changed by the user
 
         Args:
-            None
+            ref: the gdal file reference object (a la ref = gdal.Open('some_file.tif', 1)
 
         Returns:
             None
