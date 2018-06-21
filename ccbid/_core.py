@@ -80,7 +80,7 @@ def get_sample_weights(y):
 #-----
 class model:
     def __init__(self, models=None, params=None, calibrator=None, run_calibration=None, 
-                 average_proba=True, labels=None, good_bands=None):
+                 average_proba=True, labels=None, good_bands=None, reducer=None):
         """Creates an object to build the CCB-ID models. Should approximate the functionality
         of the sklearn classifier modules, though not perfectly.
         
@@ -95,6 +95,7 @@ class model:
             average_proba   - flag to report the output probabilities as the average across models
             labels          - the species labels for each class
             good_bands      - a boolean array of good band values to store (but not used by this object)
+            reducer         - the data reducer/transformer to apply to input data
             
         Returns:
             a CCB-ID model object with totally cool functions and attributes.
@@ -147,6 +148,13 @@ class model:
             self.good_bands_ = None
         else:
             self.good_bands_ = good_bands
+            
+        if reducer is None:
+            self.reducer = None
+        else:
+            self.reducer = reducer
+            
+        self.n_features_ = None
         
     def fit(self, x, y, sample_weight=None):
         """Fits each classification model
