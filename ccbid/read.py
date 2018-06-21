@@ -5,6 +5,7 @@ import numpy as _np
 import gdal as _gdal
 import pandas as _pd
 import pickle as _pickle
+_gdal.UseExceptions()
 
 
 def bands(path):
