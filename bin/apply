@@ -3,10 +3,8 @@
 """
 
 import sys
-
 import numpy as np
 import pandas as pd
-
 import ccbid
 from ccbid import args
 from ccbid import prnt
@@ -37,6 +35,7 @@ def parse_args():
     args.remove_outliers(parser)
     args.aggregate(parser)
     args.labels(parser)
+    args.use_calibrated(parser)
     args.cpus(parser)  # maybe add function to model object to update the n_cpus in each model
     args.verbose(parser)
 
@@ -61,6 +60,7 @@ def arg_logic(argv):
         argv.remove_outliers = 'PCA'
         argv.threshold = 4
         argv.aggregate = 'average'
+        argv.calibrated = True
         # args.feature_selection = False
 
 
@@ -181,7 +181,7 @@ def main():
         prnt.status("Applying CCBID model to input features")
 
     # pred = model.predict(features)
-    prob = model.predict_proba(features, average_proba=True)
+    prob = model.predict_proba(features, use_calibrated=argv.calibrated, average_proba=True)
 
     # ensemble the pixels to the crown scale
     if argv.aggregate is not None:
