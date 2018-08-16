@@ -146,6 +146,7 @@ class model:
             self.reducer = reducer
 
         self.n_features_ = None
+        self.use_calibrated_ = False
 
     def fit(self, x, y, sample_weight=None):
         """Fits each classification model
