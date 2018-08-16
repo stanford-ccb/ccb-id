@@ -4,7 +4,7 @@ The Stanford Center for Conservation Biology's imaging-spectroscopy-based specie
 
 This work is described in Anderson, 2018, [The CCB-ID approach to tree species mapping with airborne imaging spectroscopy](https://peerj.com/preprints/26972/). It was developed as part of the NEON-NIST [ECODSE](http://www.ecodse.org/) data science evaluation competition.
 
-All (c) 2018 Christopher B. Anderson
+All (c) 2018+ Christopher B. Anderson
 - [E-mail](mailto:cbanders@stanford.edu)
 - [Google Scholar](https://scholar.google.com/citations?user=LoGxS40AAAAJ&hl=en)
 - [Personal website](https://christobal54.github.io/)
