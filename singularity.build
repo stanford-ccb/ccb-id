@@ -21,6 +21,9 @@ From: ubuntu:17.10
     # set the python path for custom ccb-id install
     export PYTHONPATH=$CCB/ccb-id
     export PATH=$CCB/ccb-id/bin:$PATH
+    
+    # set the path to the ipython configuration
+    export IPYTHONDIR=$CCBID/ipython
 
 %post
     # set the default directory for storing configuration files
