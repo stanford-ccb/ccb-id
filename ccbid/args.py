@@ -104,6 +104,11 @@ def remove_outliers(parser):
 def outlier_threshold(parser):
     parser.add_argument('--threshold', help='the threshold for outlier removal', default=3)
     return parser
+    
+
+def use_calibrated(parser):
+    parser.add_argument('--use-calibrated', help='set to predict probabilities using the calibrated model', type=bool, default=False)
+    return parser
 
 
 def split(parser):
