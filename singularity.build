@@ -15,14 +15,12 @@ From: ubuntu:17.10
     mkdir $SINGULARITY_ROOTFS/ccb
 
 %environment
-    # set the base ccb data directory
-    export CCB=/ccb
-
-    # set the python path for custom ccb-id install
-    export PYTHONPATH=$CCB/ccb-id
-    export PATH=$CCB/ccb-id/bin:$PATH
+    # make sure you have a $CCBID environment variable set on your local machine
+    #  that points to the ccb-id base directory
     
-    # set the path to the ipython configuration
+    # here we set the path, python path, and ipython path to access the ccb-id install
+    export PYTHONPATH=$CCBID:$PYTHONPATH
+    export PATH=$CCBID/bin:$PATH
     export IPYTHONDIR=$CCBID/ipython
 
 %post
