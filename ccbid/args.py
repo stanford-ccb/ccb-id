@@ -106,8 +106,8 @@ def outlier_threshold(parser):
     return parser
     
 
-def use_calibrated(parser):
-    parser.add_argument('--use-calibrated', help='set to predict probabilities using the calibrated model', type=bool, default=False)
+def uncalibrated(parser):
+    parser.add_argument('-u', '--uncalibrated', help='set to predict probabilities using the uncalibrated model', type=bool, default=False)
     return parser
 
 
