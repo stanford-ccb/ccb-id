@@ -35,7 +35,7 @@ def parse_args():
     args.remove_outliers(parser)
     args.aggregate(parser)
     args.labels(parser)
-    args.use_calibrated(parser)
+    args.uncalibrated(parser)
     args.cpus(parser)  # maybe add function to model object to update the n_cpus in each model
     args.verbose(parser)
 
@@ -60,7 +60,7 @@ def arg_logic(argv):
         argv.remove_outliers = 'PCA'
         argv.threshold = 4
         argv.aggregate = 'average'
-        argv.calibrated = True
+        argv.uncalibrated = False
         # args.feature_selection = False
 
 
@@ -179,9 +179,19 @@ def main():
     if argv.verbose:
         prnt.line_break()
         prnt.status("Applying CCBID model to input features")
+        
+    # determine whether to use the calibrated prediction probabilities
+    use_calibrated = True
+    if argv.uncalibrated:
+        use_calibrated = False
+    else:
+        if not model.is_calibrated_:
+            use_calibrated = False
+        
+    print(use_calibrated)
 
     # pred = model.predict(features)
-    prob = model.predict_proba(features, use_calibrated=argv.calibrated, average_proba=True)
+    prob = model.predict_proba(features, use_calibrated=use_calibrated, average_proba=True)
 
     # ensemble the pixels to the crown scale
     if argv.aggregate is not None:

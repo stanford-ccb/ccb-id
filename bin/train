@@ -151,10 +151,13 @@ def main():
 
     if argv.ecodse:
         features, crown_labels, training_id = ccbid.resample.uniform(features, crown_labels, other_array=training_id)
-
+    
+    ## no other resampling method is implemented yet. #toDo
+    
     # set the label to split the data on samples or crowns
     if argv.split == 'sample':
         stratify = crown_labels
+        
     elif argv.split == 'crown':
         # ok, so, I think this is actually not quite what I want it to be, but
         # I think it will work pretty well
