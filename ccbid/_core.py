@@ -117,10 +117,10 @@ class model:
             self.calibrator = calibrator
 
         # set the attribute determining whether to perform calibration on a per-model basis
-        if run_calibration is None:
-            self.run_calibration_ = _np.repeat(True, self.n_models_)
-        else:
-            self.run_calibration_ = run_calibration
+        #if run_calibration is None:
+        #    self.run_calibration_ = _np.repeat(True, self.n_models_)
+        #else:
+        #    self.run_calibration_ = run_calibration
 
         # set an attribute to hold the final calibrated models
         self.calibrated_models_ = _np.repeat(None, self.n_models_)
@@ -146,7 +146,7 @@ class model:
             self.reducer = reducer
 
         self.n_features_ = None
-        self.use_calibrated_ = False
+        self.is_calibrated_ = False
 
     def fit(self, x, y, sample_weight=None):
         """Fits each classification model
@@ -183,12 +183,14 @@ class model:
             None. Updates each item in self.calibrated_models_
         """
         for i in range(self.n_models_):
-            if self.run_calibration_[i] or run_calibration[i]:
-                self.calibrator.set_params(base_estimator=self.models_[i])
-                self.calibrator.fit(x, y)
-                self.calibrated_models_[i] = _copy.copy(self.calibrator)
-            else:
-                self.calibrated_models_[i] = _copy.copy(self.models_[i])
+            #if self.run_calibration_[i] or run_calibration[i]:
+            self.calibrator.set_params(base_estimator=self.models_[i])
+            self.calibrator.fit(x, y)
+            self.calibrated_models_[i] = _copy.copy(self.calibrator)
+            #else:
+            #    self.calibrated_models_[i] = _copy.copy(self.models_[i])
+                
+        self.is_calibrated_ = True
 
     def tune(self, x, y, param_grids, criterion):
         pass
