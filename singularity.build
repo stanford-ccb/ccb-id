@@ -13,6 +13,9 @@ From: ubuntu:17.10
 %setup
     # set the default directory for storing configuration files
     mkdir $SINGULARITY_ROOTFS/ccb
+    
+%files
+    requirements.txt
 
 %environment
     # make sure you have a $CCBID environment variable set on your local machine
@@ -25,8 +28,8 @@ From: ubuntu:17.10
 
 %post
     # set the default directory for storing configuration files
-    export CCB=/ccb
-    cd $CCB
+    #export CCB=/ccb
+    #cd $CCB
 
     # install packages via apt
     apt-get update -y
@@ -73,10 +76,11 @@ From: ubuntu:17.10
         Pyro4 
 
     # install ccb-id from git repo
-    git clone https://github.com/stanford-ccb/ccb-id.git
+    #git clone https://github.com/stanford-ccb/ccb-id.git
     
     # install the ccb-id dependencies
-    pip install -r ccb-id/requirements.txt
+    #pip install -r ccb-id/requirements.txt
+    pip install -r requirements.txt
     
     # that's all, folks!
 
