@@ -7,7 +7,7 @@ This work is described in Anderson, 2018, [The CCB-ID approach to tree species m
 All (c) 2018 Christopher B. Anderson
 - [E-mail](mailto:cbanders@stanford.edu)
 - [Google Scholar](https://scholar.google.com/citations?user=LoGxS40AAAAJ&hl=en)
-- [Personal website](https://christobal54.github.io/)
+- [Personal website](https://cbanderson.info/)
  
 ## Functionality
 
