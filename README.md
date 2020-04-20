@@ -1,17 +1,17 @@
 # CCB-ID
 
-The Stanford Center for Conservation Biology's imaging-spectroscopy-based species classification approach.
+CCB-ID is the Stanford Center for Conservation Biology's imaging-spectroscopy-based species classification approach.
 
-This work is described in Anderson, 2018, [The CCB-ID approach to tree species mapping with airborne imaging spectroscopy](https://peerj.com/articles/5666/). It was developed as part of the NEON-NIST [ECODSE](http://www.ecodse.org/) data science evaluation competition.
+This work is described in *Anderson, 2018*, [The CCB-ID approach to tree species mapping with airborne imaging spectroscopy](https://peerj.com/articles/5666/). It was developed as part of the NEON-NIST [ECODSE](http://www.ecodse.org/) data science evaluation competition.
 
-All (c) 2018 Christopher B. Anderson
+All (c) 2018+ Christopher B. Anderson
 - [E-mail](mailto:cbanders@stanford.edu)
 - [Google Scholar](https://scholar.google.com/citations?user=LoGxS40AAAAJ&hl=en)
 - [Personal website](https://cbanderson.info/)
  
 ## Functionality
 
-The CCB-ID package can be used in two ways. First, you can run the scripts for training and applying species classification models (under `bin/train` and `bin/apply` respectively). Second, you could import the underlying python functions used in these scripts using `import ccbid` (based on the functions in the `ccbid/` directory.
+`CCB-ID` can be used in two ways. First, you can run the scripts for training and applying species classification models (under `bin/train` and `bin/apply` respectively). Second, you could import the underlying python functions used in these scripts using `import ccbid` (based on the functions in the `ccbid/` directory.
 
 If you install this package using Singularity (e.g., following the [Singularity install instructions](#singularity)), you could train and apply the models using the following commands.
 
@@ -59,30 +59,9 @@ The CCB-ID scripts allow using custom data as inputs to model building. These cu
  
 ## Install options
 
-Users have several options for installing CCB-ID. I recommend using [Singularity](#singularity), as the packaged was developed in a singularity container environment. [Conda](#conda) and [pip](#pip) installs are supported, too.
+Users have several options for installing CCB-ID. I originally developed the package using [Singularity](#singularity), but [conda](#conda) and [pip](#pip) installs are supported and are much less burdensome to set up.
 
-### Singularity
-
-[Singularity](http://singularity.lbl.gov/) containers can be used to package workflows, software, libraries, and data, and can be transferred across machines. The CCB-ID package comes with a Singularity build script to run the module, and contains the full CCB-ID workflow. To use it, you must have [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) and Singularity installed (instructions for [Linux](http://singularity.lbl.gov/install-linux), [Mac](http://singularity.lbl.gov/install-mac), or [Windows](http://singularity.lbl.gov/install-windows)). You can then run:
-
-```sh
-# clone the repo then build the singularity image
-git clone https://github.com/stanford-ccb/ccb-id.git
-cd ccb-id
-sudo singularity build ccb-id singularity.build
-```
-
-Building the container will take a while. Once built, you can run:
-```sh
-./ccbid train -h
-./ccbid python -c "import ccbid; print(dir(ccbid))"
-```
-
-These will verify the package installed correctly, and list out the command line options and the package functions.
-
-The CCB-ID module is localized inside the `ccb-id` container, so you can move this container to any directory (e.g., if you store all your containers in one place like `~/singularity/`. Or, you could add the path with the `ccb-id` container to `$PATH`. 
-
-### Conda
+### conda
 
 Additionally, users can install a custom conda environment to run the CCB-ID module. You can run:
 
@@ -118,7 +97,28 @@ sudo pip install -r requirements.txt
 sudo python setup.py install
 ```
 
-But at that point I think you're better of running the Singularity [install](#singularity) since `gdal` tends to wreak havoc on system installs.
+But at that point I think you're better of running the Singularity [install](#singularity) since custom `gdal` installs tends to wreak havoc.
+
+### singularity
+
+[Singularity](http://singularity.lbl.gov/) containers can be used to package workflows, software, libraries, and data, and can be transferred across machines. The CCB-ID package comes with a Singularity build script to run the module, and contains the full CCB-ID workflow. To use it, you must have [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) and Singularity installed (instructions for [Linux](http://singularity.lbl.gov/install-linux), [Mac](http://singularity.lbl.gov/install-mac), or [Windows](http://singularity.lbl.gov/install-windows)). You can then run:
+
+```sh
+# clone the repo then build the singularity image
+git clone https://github.com/stanford-ccb/ccb-id.git
+cd ccb-id
+sudo singularity build ccb-id singularity.build
+```
+
+Building the container will take a while. Once built, you can run:
+```sh
+./ccbid train -h
+./ccbid python -c "import ccbid; print(dir(ccbid))"
+```
+
+These will verify the package installed correctly, and list out the command line options and the package functions.
+
+The CCB-ID module is localized inside the `ccb-id` container, so you can move this container to any directory (e.g., if you store all your containers in one place like `~/singularity/`. Or, you could add the path with the `ccb-id` container to `$PATH`. 
 
 ## Additional information
 
